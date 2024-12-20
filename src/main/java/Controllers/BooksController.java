@@ -25,9 +25,9 @@ import java.util.UUID;
 @Controller
 @RequestMapping("/books")
 public class BooksController {
+
     private final BooksDao booksDao;
     private final PersonDao personDao;
-
 
 
     @Autowired
@@ -35,8 +35,6 @@ public class BooksController {
         this.booksDao = booksDao;
         this.personDao = personDao;
     }
-
-
 
     //получить список книг
     @GetMapping
@@ -59,7 +57,6 @@ public class BooksController {
 
         return "books/view-to-create-new-book";
     }
-
 
     //создание книги POST
     @PostMapping
@@ -96,9 +93,6 @@ public class BooksController {
     public String editBook(@PathVariable("id") long id, Model model) {
         Books bookToBeEdited = booksDao.getBookById(id);
         model.addAttribute("Book", bookToBeEdited);
-//        if (bookToBeEdited.getOwner() != null) {
-//            model.addAttribute("keyPeoples", bookToBeEdited.getOwner());
-//        }
         return "books/view-to-edit-book";
     }
 

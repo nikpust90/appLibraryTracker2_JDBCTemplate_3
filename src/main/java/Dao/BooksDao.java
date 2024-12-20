@@ -1,19 +1,10 @@
 package Dao;
 
-
-
 import Model.Books;
 import Model.Person;
 import jakarta.validation.Valid;
-
-
-import java.awt.print.Book;
 import java.util.List;
-
-
-import lombok.Data;
 import lombok.Getter;
-import lombok.Setter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,25 +13,17 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 
-
-//@Getter
-//@Setter
-//@Data
 @Getter
 @Repository
 public class BooksDao {
+
     private static final Logger logger = LoggerFactory.getLogger(BooksDao.class);
     private final JdbcTemplate jdbcTemplate;
-
 
     @Autowired
     public BooksDao(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
-
-    //Books books = new Books();
-
-
 
     //получение всех книг
     public List<Books> getAllBooks() {
@@ -58,7 +41,6 @@ public class BooksDao {
 
         try {
             // Устанавливаем значение owner в NULL, если оно отсутствует
-
             jdbcTemplate.update(sql, books.getTitle(), books.getAuthor(), books.getYear(), null);
         } catch (Exception e) {
             logger.error("Ошибка при сохранении объекта book: {}", books, e);
@@ -139,6 +121,5 @@ public class BooksDao {
             throw new RuntimeException("Ошибка при удалении связи книги с владельцем", e);
         }
     }
-
 
 }

@@ -33,7 +33,6 @@ public class PeopleController {
     //получение всех людей GET
     @GetMapping
     public String getAllPeople(Model model, HttpServletResponse response) {
-
         try {
             List<Person> allPeoples = personDao.getAllPeoples();
             model.addAttribute("keyAllPeoples", allPeoples);
