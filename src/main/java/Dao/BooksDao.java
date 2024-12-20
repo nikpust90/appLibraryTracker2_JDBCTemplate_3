@@ -53,13 +53,15 @@ public class BooksDao {
         }
     }
 
-    //создание книги
-    public void saveBooks (@Valid Books books){
+    public void saveBooks(@Valid Books books) {
+        String sql = "INSERT INTO book (title, author, year, owner) VALUES (?, ?, ?, ?)";
+
         try {
-            String sql = "INSERT INTO book (title, author, year, owner) VALUES (?, ?, ?, ?)";
-            jdbcTemplate.update(sql, books.getTitle(), books.getAuthor(), books.getYear(), books.getOwnerId());
+            // Устанавливаем значение owner в NULL, если оно отсутствует
+
+            jdbcTemplate.update(sql, books.getTitle(), books.getAuthor(), books.getYear(), null);
         } catch (Exception e) {
-            logger.error("Ошибка при сохранении объекта book", e);
+            logger.error("Ошибка при сохранении объекта book: {}", books, e);
             throw new RuntimeException("Ошибка при сохранении объекта book", e);
         }
     }
@@ -67,10 +69,21 @@ public class BooksDao {
     //получение объекта book по id
     public Books getBookById(long id) {
         try {
-            String sql = "SELECT * FROM book WHERE id = ?";
-            return jdbcTemplate.queryForObject(sql, new BeanPropertyRowMapper<>(Books.class), id);
+            String sql = "SELECT id, title, author, year, owner AS ownerId FROM book WHERE id = ?";
+
+            return jdbcTemplate.queryForObject(sql, (rs, rowNum) -> {
+                Books book = new Books();
+                book.setId(rs.getLong("id"));
+                book.setTitle(rs.getString("title"));
+                book.setAuthor(rs.getString("author"));
+                book.setYear(rs.getInt("year"));
+                // Учитываем возможность NULL для owner
+                Long ownerId = rs.getObject("ownerId", Long.class);
+                book.setOwnerId(ownerId != null ? ownerId : 0L); // Если ownerId = null, задаем значение 0L
+                return book;
+            }, id);
         } catch (Exception e) {
-            logger.error("Ошибка при получении объекта book", e);
+            logger.error("Ошибка при получении объекта book с ID " + id, e);
             throw new RuntimeException("Ошибка при получении объекта book", e);
         }
     }
@@ -78,8 +91,8 @@ public class BooksDao {
     //обновление объекта book
     public void updateBook(@Valid Books bookFromForm) {
         try {
-            String sql = "UPDATE book SET title = ?, author = ?, year = ?, owner = ? WHERE id = ?";
-            jdbcTemplate.update(sql, bookFromForm.getTitle(), bookFromForm.getAuthor(), bookFromForm.getYear(), bookFromForm.getOwnerId(), bookFromForm.getId());
+            String sql = "UPDATE book SET title = ?, author = ?, year = ? WHERE id = ?";
+            jdbcTemplate.update(sql, bookFromForm.getTitle(), bookFromForm.getAuthor(), bookFromForm.getYear(), bookFromForm.getId());
         } catch (Exception e) {
             logger.error("Ошибка при обновлении объекта book", e);
             throw new RuntimeException("Ошибка при обновлении объекта book", e);
@@ -113,16 +126,19 @@ public class BooksDao {
     }
 
     // удаляем книгу у читателя
-    public void deleteBookToPerson(long bookId) {
+    public void removeBookOwner(long bookId) {
         try {
-            String sql = "DELETE FROM book WHERE id = ?";
+            String sql = "UPDATE book SET owner = NULL WHERE id = ?";
             int rowsAffected = jdbcTemplate.update(sql, bookId);
+
             if (rowsAffected == 0) {
                 throw new IllegalArgumentException("Книга с ID " + bookId + " не найдена");
             }
         } catch (Exception e) {
-            logger.error("Ошибка при назначении книги", e);
-            throw new RuntimeException("Ошибка при назначении книги", e);
+            logger.error("Ошибка при удалении связи книги с владельцем (ставим NULL)", e);
+            throw new RuntimeException("Ошибка при удалении связи книги с владельцем", e);
         }
     }
+
+
 }

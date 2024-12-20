@@ -81,6 +81,11 @@ public class BooksController {
 
         Books bookById = booksDao.getBookById(id);
         model.addAttribute("keyBookById", bookById);
+        // Если у книги есть владелец, добавляем данные о нём в модель
+        if (bookById.getOwnerId() != 0) {
+            Person owner = personDao.getPersonById(bookById.getOwnerId());
+            model.addAttribute("owner", owner);
+        }
         //получение всех читателей
         model.addAttribute("people", personDao.getAllPeoples());
         return "books/view-with-book-by-id";
@@ -129,7 +134,7 @@ public class BooksController {
     @PostMapping("/loose/{id}")
     public String looseBook(@PathVariable("id") long bookId) {
         //Person person = personDao.getPersonById(personId);
-        booksDao.deleteBookToPerson(bookId);
+        booksDao.removeBookOwner(bookId); // Обновленный метод
         return "redirect:/books/" + bookId;
     }
 }

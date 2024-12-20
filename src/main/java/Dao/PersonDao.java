@@ -1,6 +1,7 @@
 package Dao;
 
 
+import Model.Books;
 import Model.Person;
 import jakarta.validation.Valid;
 
@@ -14,6 +15,7 @@ import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
+import java.awt.print.Book;
 import java.util.List;
 
 @Getter
@@ -55,8 +57,17 @@ public class PersonDao{
     //получение человека по id
     public Person getPersonById(long id) {
         try {
-            String sql = "SELECT * FROM person WHERE id = ?";
-            return jdbcTemplate.queryForObject(sql, new BeanPropertyRowMapper<>(Person.class), id);
+            String personSql = "SELECT * FROM person WHERE id = ?";
+            Person person = jdbcTemplate.queryForObject(personSql, new BeanPropertyRowMapper<>(Person.class), id);
+
+            if (person != null) {
+                String booksSql = "SELECT * FROM book WHERE owner = ?";
+                List<Books> listBooks = jdbcTemplate.query(booksSql, new BeanPropertyRowMapper<>(Books.class), id);
+                person.setBooks(listBooks);
+            }
+
+            return person;
+
         } catch (Exception e) {
             logger.error("Ошибка при получении объекта Person", e);
             throw new RuntimeException("Ошибка при получении объекта Person", e);
@@ -77,8 +88,13 @@ public class PersonDao{
     //удаление человека
     public void deletePerson(long id) {
         try {
-            String sql = "DELETE FROM person WHERE id = ?";
-            jdbcTemplate.update(sql, id);
+            // Обнуляем owner в таблице book для книг, принадлежащих удаляемому человеку
+            String updateBooksSql = "UPDATE book SET owner = NULL WHERE owner = ?";
+            jdbcTemplate.update(updateBooksSql, id);
+
+            // Удаляем запись о человеке из таблицы person
+            String deletePersonSql = "DELETE FROM person WHERE id = ?";
+            jdbcTemplate.update(deletePersonSql, id);
         } catch (Exception e) {
             logger.error("Ошибка при удалении объекта Person", e);
             throw new RuntimeException("Ошибка при удалении объекта Person", e);
