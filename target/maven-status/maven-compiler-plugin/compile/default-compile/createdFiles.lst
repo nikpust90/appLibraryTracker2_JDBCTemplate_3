@@ -1,8 +1,0 @@
-Model\Person.class
-Controllers\PeopleController.class
-Model\Books.class
-Config\MyDispatcherServlet.class
-Dao\BooksDao.class
-Config\SpringConfig.class
-Controllers\BooksController.class
-Dao\PersonDao.class
