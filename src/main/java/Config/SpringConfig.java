@@ -68,7 +68,7 @@ public class SpringConfig implements WebMvcConfigurer {
         String username = env.getProperty("username");
         String url = env.getProperty("url");
         dataSource.setDriverClassName(driver);
-        dataSource.setUsername("postgres");
+        dataSource.setUsername("projekt2_user");
         dataSource.setPassword(password);
         dataSource.setUrl(url);
         return dataSource;
